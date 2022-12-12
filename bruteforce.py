@@ -3,31 +3,30 @@
 - Suggérer la liste d'actions la plus rentable
 """
 
+import csv
 from time import time
 
 
-actions = [
-    {'nom': "Action-1", 'cout': 20, 'profit': 0.05},
-    {'nom': "Action-2", 'cout': 30, 'profit': 0.10},
-    {'nom': "Action-3", 'cout': 50, 'profit': 0.15},
-    {'nom': "Action-4", 'cout': 70, 'profit': 0.20},
-    {'nom': "Action-5", 'cout': 60, 'profit': 0.17},
-    {'nom': "Action-6", 'cout': 80, 'profit': 0.25},
-    {'nom': "Action-7", 'cout': 22, 'profit': 0.07},
-    {'nom': "Action-8", 'cout': 26, 'profit': 0.11},
-    {'nom': "Action-9", 'cout': 48, 'profit': 0.13},
-    {'nom': "Action-10", 'cout': 34, 'profit': 0.27},
-    {'nom': "Action-11", 'cout': 42, 'profit': 0.17},
-    {'nom': "Action-12", 'cout': 110, 'profit': 0.09},
-    {'nom': "Action-13", 'cout': 38, 'profit': 0.23},
-    {'nom': "Action-14", 'cout': 14, 'profit': 0.01},
-    {'nom': "Action-15", 'cout': 18, 'profit': 0.03},
-    {'nom': "Action-16", 'cout': 8, 'profit': 0.08},
-    {'nom': "Action-17", 'cout': 4, 'profit': 0.12},
-    {'nom': "Action-18", 'cout': 10, 'profit': 0.14},
-    {'nom': "Action-19", 'cout': 24, 'profit': 0.21},
-    {'nom': "Action-20", 'cout': 114, 'profit': 0.18},
-]
+MAX_EXPENSE = 500
+INPUT_FILE = csv.DictReader(open("datas/dataset_partie1.csv"))
+
+
+def get_actions(input_file):
+    """Obtenir les données sur les actions à partir d'un fichier.
+
+    Args:
+        input_file (DictReader): fichier avec les actions
+
+    Returns:
+        actions(list): liste d'actions
+    """
+    actions = []
+    for row in input_file:
+        price = float(row['price'])
+        profit = float(row['profit'])
+        if price > 0 and profit > 0:
+            actions.append(row)
+    return actions
 
 
 def get_all_combinations(datas):
@@ -65,8 +64,10 @@ def find_best_combination(combinations, max_expense):
         combination_benefit = 0
         combination_depense = 0
         for action in combination:
-            combination_benefit += action['profit'] * action['cout']
-            combination_depense += action['cout']
+            combination_benefit += (
+                float(action['profit']) / 100 * float(action['price'])
+            )
+            combination_depense += float(action['price'])
         if (
             best_depense <= combination_depense <= max_expense
             and combination_benefit >= best_benefit
@@ -77,17 +78,19 @@ def find_best_combination(combinations, max_expense):
     return best_combination, best_benefit, best_depense
 
 
+actions = get_actions(INPUT_FILE)
 start_time = time()
 combinations = get_all_combinations(actions)
 best_combination, best_benefit, best_depense = find_best_combination(
-    combinations, 500.0
+    combinations, MAX_EXPENSE
 )
 end_time = time()
 total_time = end_time - start_time
 
-print("\nRésolution exacte:\n")
+print("\nRésolution exacte")
+print("-------------------")
 print(
-    f"La combinaison d'actions la plus rentable est: {[action['nom'] for action in best_combination]}\n"
+    f"La meilleure stratégie d'investissement est: {[action['name'] for action in best_combination]}\n"
     + f"Le bénéfice est de {best_benefit} euros\n"
     + f"La dépense est de {best_depense}\n"
 )
